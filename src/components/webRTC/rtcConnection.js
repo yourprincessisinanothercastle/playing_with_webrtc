@@ -37,7 +37,7 @@ import DataChannel from './rtcConnectionDataChannel';
 
 export default class RTCConnection {
 
-  constructor(signaling, target) {
+  constructor(signaling, target, channelOpenedCallback) {
     let config = {
       "iceServers": [{
         "url": "stun:stun.l.google.com:19302"
@@ -45,8 +45,9 @@ export default class RTCConnection {
     };
 
     this._sendMessage = function (target, message) { // not working as arrow
-      signaling.sendMessage(target, message)
+      signaling.sendMessage(target, message);
     };
+
     this.target = target;
 
     this.peerConnection = new RTCPeerConnection(config);
@@ -54,9 +55,10 @@ export default class RTCConnection {
       // if we find a new ice for us, do something to send it to the peer
       if (!this.peerConnection || !this.peerConnection.remoteDescription.type) return;
       if (!event || !event.candidate) return;
+      console.log('sending ice candidate:', event.candidate)
       this.sendIceCandidate(event.candidate);
     };
-    this.channel = new DataChannel(this.peerConnection);
+    this.channel = new DataChannel(this.peerConnection, channelOpenedCallback);
   }
 
   _sendSignalingMessage(message) {

@@ -1,6 +1,6 @@
 class DataChannel {
 
-  constructor(peerConnection) {
+  constructor(peerConnection, channelOpenedCallback) {
     let datachannelOptions = {
       reliable: false
     };
@@ -13,7 +13,7 @@ class DataChannel {
     };
 
     this.dataChannel.onopen = e => {
-      this.channelOpened();
+      channelOpenedCallback();
     };
 
     this.dataChannel.onclose = function () {
