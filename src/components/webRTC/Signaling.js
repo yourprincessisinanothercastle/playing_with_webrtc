@@ -50,8 +50,8 @@ class Signaling {
 
   joinGame(server_id) {
     return new Promise((resolve, reject) => {
-      this.connection = new RTC(this, server_id, resolve);
-      this.connection.channel.createOffer()
+      this.connections[server_id] = new RTC(this, server_id, resolve);
+      this.connections[server_id].channel.createOffer()
         .then(offer => {
           this.sendMessage(server_id, offer);
         });

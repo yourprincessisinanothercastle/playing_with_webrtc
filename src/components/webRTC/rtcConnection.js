@@ -55,14 +55,19 @@ export default class RTCConnection {
       // if we find a new ice for us, do something to send it to the peer
       if (!this.peerConnection || !this.peerConnection.remoteDescription.type) return;
       if (!event || !event.candidate) return;
-      console.log('sending ice candidate:', event.candidate)
       this.sendIceCandidate(event.candidate);
     };
+    this.peerConnection.ondatachannel = (datachannelEvent) => {
+      // todo: need a fallback here?
+      if (typeof channelOpenedCallback === "function") {
+        channelOpenedCallback(datachannelEvent.channel);
+      }
+    };
+
     this.channel = new DataChannel(this.peerConnection, channelOpenedCallback);
   }
 
   _sendSignalingMessage(message) {
-    console.log('sending', message)
     this._sendMessage(this.target, message);
   }
 
@@ -83,7 +88,6 @@ export default class RTCConnection {
   }
 
   sendIceCandidate(candidate) {
-    console.log('sending ice candidate')
     this._sendSignalingMessage({
       type: 'iceCandidate',
       candidate
@@ -92,7 +96,6 @@ export default class RTCConnection {
 
   addIceCandidate(candidate) {
     // add a remote ice
-    console.log('got ice candidate')
     this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   }
 }
