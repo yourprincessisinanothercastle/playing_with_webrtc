@@ -3,11 +3,12 @@ import RTC from './rtcConnection';
 
 
 class Signaling {
-  constructor(onConnect, onDisconnect, onGames) {
+  constructor(onConnect, onDisconnect, onGames, onGameOpened) {
     this.socket = socketio('http://localhost:5000');
     this.onConnect = onConnect;
     this.onDisconnect = onDisconnect;
     this.onGames = onGames;
+    this.onGameOpened = onGameOpened;
     this.setupEvents();
   };
 
@@ -21,6 +22,10 @@ class Signaling {
       this.onGames(data);
     });
 
+    this.socket.on('game_open', data => {
+      this.onGameOpened();
+    });
+
     this.socket.on('disconnect', () => {
       this.onDisconnect();
     });
@@ -28,6 +33,7 @@ class Signaling {
     this.connections = {};
 
     this.socket.on('message', (msg) => {
+      console.log('got', msg)
       if (msg['data']['type'] === "offer") {
         /* server gets offers */
         this.connections[msg['from']] = new RTC(this, msg['from']);
@@ -36,13 +42,12 @@ class Signaling {
       } else if (msg['data']['type'] === "answer") {
         /* client gets answer */
         // todo: move processanswer to connection
-        this.connections[msg['from']].channel.processAnswer(msg['data']);
+        this.connections[msg['from']].processAnswer(msg['data']);
 
       } else if (msg['data']['type'] === 'iceCandidate') {
         this.connections[msg['from']].addIceCandidate(msg['data']['candidate']);
 
       } else {
-
         console.log('unknown msg', msg);
       }
     });
@@ -51,10 +56,7 @@ class Signaling {
   joinGame(server_id) {
     return new Promise((resolve, reject) => {
       this.connections[server_id] = new RTC(this, server_id, resolve);
-      this.connections[server_id].channel.createOffer()
-        .then(offer => {
-          this.sendMessage(server_id, offer);
-        });
+      this.connections[server_id].sendOffer();
     });
   }
 
@@ -69,6 +71,7 @@ class Signaling {
   }
 
   sendMessage(to, data) {
+    console.log('sending', data, to)
     this.socket.emit('message', data, to)
   }
 }

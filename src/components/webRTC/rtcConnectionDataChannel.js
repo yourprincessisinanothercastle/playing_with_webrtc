@@ -1,12 +1,17 @@
 class DataChannel {
 
-  constructor(peerConnection) {
-    let datachannelOptions = {
-      reliable: false
-    };
+  constructor(peerConnection, isReliable, openCallback) {
+    console.log('new channel on', peerConnection)
+    let datachannelOptions = {};
 
-    this.peerConnection = peerConnection;
-    this.dataChannel = this.peerConnection.createDataChannel("datachannel", datachannelOptions); // (2)
+    if (!isReliable) {
+      datachannelOptions = {
+        maxRetransmits: false
+      };
+    }
+
+    let id = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
+    this.dataChannel = peerConnection.createDataChannel(id, datachannelOptions); // (2)
 
     this.dataChannel.onmessage = (e) => {
       this.processMessage(e);
@@ -19,34 +24,12 @@ class DataChannel {
     this.dataChannel.onerror = function () {
       console.log("DC ERROR!!!");
     };
-  }
 
-
-  createOffer() { // (3), server
-    return this.peerConnection.createOffer()
-      .then(offer => {
-        this.peerConnection.setLocalDescription(offer);
-        return offer; // (4)
-      }).catch(error => {
-        console.error('error creating offer', error)
-      })
-  }
-
-  processOffer(offer) {
-    this.peerConnection
-      .setRemoteDescription(new RTCSessionDescription(offer))
-      .catch(console.error)
-
-    return this.peerConnection
-      .createAnswer()
-      .then((answer) => {
-        this.peerConnection.setLocalDescription(answer);
-        return answer;
-      });
-  }
-
-  get id() {
-    return this.dataChannel.id;
+    this.dataChannel.onopen = (e) => {
+      console.log('opened!');
+      openCallback(e);
+    }
+    
   }
 
   processMessage(msg) {
@@ -64,10 +47,5 @@ class DataChannel {
   channelError(e) {
     console.log("------ DATACHANNEL ERROR ------");
   }
-
-  processAnswer(answer) {
-    this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-    console.log("------ PROCESSED ANSWER ------");
-  };
 }
 export default DataChannel;

@@ -6,6 +6,8 @@ import router from './router'
 
 Vue.config.productionTip = false
 
+import '../node_modules/bulma/css/bulma.css';
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
