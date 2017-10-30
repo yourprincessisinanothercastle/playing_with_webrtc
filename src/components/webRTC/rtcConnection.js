@@ -1,4 +1,3 @@
-import DataChannel from './rtcConnectionDataChannel';
 /*
  http://www.justgoscha.com/programming/2014/03/07/simple-webrtc-datachannel-establishment-for-dummies.html
 
@@ -35,65 +34,61 @@ import DataChannel from './rtcConnectionDataChannel';
 
  */
 
+let config = {
+  "iceServers": [{
+    "urls": ["stun:stun.l.google.com:19302"]
+  }]
+};
+
 export default class RTCConnection {
 
-  constructor(signaling, target, channelOpenedCallback) {
-    this.channelOpenedCallback = channelOpenedCallback;
-    let config = {
-      "iceServers": [{
-        "urls": ["stun:stun.l.google.com:19302"]
-      }]
-    };
-
+  constructor(signaling, target) {
     this._sendMessage = function (message) { // not working as arrow
       signaling.sendMessage(target, message);
     };
 
     this.target = target;
+    this.dataChannels = {};
 
     this.peerConnection = new RTCPeerConnection(config);
-    Promise.all([this.addDataChannel(), this.addDataChannel()])
-      .then(([reliable, unreliable]) => {
-        this.reliable = reliable;
-        this.unreliable = unreliable;
-      })
+    this.peerConnection.ondatachannel = (event) => {this.onDataChannel(event)}; // remote peer adds datachannel
+    this.peerConnection.onicecandidate = (event) => {this.onIceCandidate(event)}
+  }
 
-    this.peerConnection.ondatachannel = this.onDataChannel; // remote peer adds datachannel
+  getChannels() {
+    return Promise.all(this.datachannelPromises)
+  }
 
-    this.peerConnection.onicecandidate = (event) => {
-      console.log('new ice candidate!')
-      // if we find a new ice for us, do something to send it to the peer
-      if (!this.peerConnection || !this.peerConnection.remoteDescription.type) return;
-      if (!event || !event.candidate) return;
-      this.sendIceCandidate(event.candidate);
-    };
-
-    /*this.addDataChannel()
-      .then((event) => {
-        console.log(event);
-        this.channelOpenedCallback(this.dataChannel);
-      })*/
+  onIceCandidate(event) {
+    // if we find a new ice for us, do something to send it to the peer
+    if (!event || !event.candidate) return;
+    this.sendIceCandidate(event.candidate);
   }
 
   onDataChannel(event) {
-    event.channel.onopen = this.channelOpenedCallback;
+    // other side opens datachannel
+    event.channel.onopen = (event) => {
+      this.dataChannels[event.target.label] = event.target;
+    }
   }
 
-  addDataChannel(isReliable) {
-    return new Promise((resolve, reject) => {
-      console.log('adding new datachannel')
-      new DataChannel(this.peerConnection, isReliable, resolve);
-    });
+  addDataChannel(label, options = {}) {
+    // open a datachannel
+    let dc = this.peerConnection.createDataChannel(label, options);
+    dc.onopen = (event) => { 
+      this.dataChannels[event.currentTarget.label] = event.currentTarget;
+    };
+    return dc;
   }
 
   processAnswer(answer) {
     this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-    console.log("------ PROCESSED ANSWER ------");
   }
 
+  /* signaling stuff */
   sendOffer() {
     // we are the client, sending an offer
-    return this._createOffer({ offerToReceiveVideo: 1, offerToReceiveAudio: 1 })
+    return this._createOffer()
       .then(offer => {
         this._sendMessage(offer);
       });
@@ -113,6 +108,7 @@ export default class RTCConnection {
       candidate
     });
   }
+  /* /signaling stuff */
 
   addIceCandidate(candidate) {
     // add a remote ice

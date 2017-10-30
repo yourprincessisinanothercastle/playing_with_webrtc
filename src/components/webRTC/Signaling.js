@@ -4,7 +4,7 @@ import RTC from './rtcConnection';
 
 class Signaling {
   constructor(onConnect, onDisconnect, onGames, onGameOpened) {
-    this.socket = socketio('http://localhost:5000');
+    this.socket = socketio('http://192.168.178.44:5000');
     this.onConnect = onConnect;
     this.onDisconnect = onDisconnect;
     this.onGames = onGames;
@@ -36,7 +36,7 @@ class Signaling {
       console.log('got', msg)
       if (msg['data']['type'] === "offer") {
         /* server gets offers */
-        this.connections[msg['from']] = new RTC(this, msg['from']);
+        this.connections[msg['from']] = new RTC(this, msg['from'], []);
         this.connections[msg['from']].answerOffer(msg['data']);
 
       } else if (msg['data']['type'] === "answer") {
@@ -55,7 +55,11 @@ class Signaling {
 
   joinGame(server_id) {
     return new Promise((resolve, reject) => {
-      this.connections[server_id] = new RTC(this, server_id, resolve);
+      this.connections[server_id] = new RTC(this, server_id, []);
+
+      this.connections[server_id].addDataChannel("reliable", {});
+      this.connections[server_id].addDataChannel("unreliable", {maxRetransmits: 0, ordered: false});
+      
       this.connections[server_id].sendOffer();
     });
   }
@@ -63,7 +67,7 @@ class Signaling {
   openGame(name) {
     this.socket.emit('open_game', {
       game_name: name
-    })
+    });
   }
 
   getGames() {
