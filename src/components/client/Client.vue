@@ -4,8 +4,13 @@
       <div class="container">
         <div class="columns">
           <div class="column">
+            <h5 class=title>join game</h5>
+
             <div v-for="id in Object.keys(openGames)">
-              <a class=button @click="publishOffer(openGames[id]['server'])"> join {{ id }} </a>
+              <a class=button @click="publishOffer(openGames[id]['server'])"> {{ id }}</a>
+            </div>
+            <div v-if="Object.keys(openGames).length === 0">
+              no games open
             </div>
           </div>
         </div>
@@ -15,14 +20,13 @@
 </template>
 
 <script>
-  import Signaling from '../webRTC/Signaling.js'
+  import Signaling from '../webRTC/ClientSignaling'
 
   export default {
     data() {
       return {
         openGames: {},
-        signaling: new Signaling(this.onConnected, this.onDisconnected, this.onGames),
-        msg: 'doooone!',
+        signaling: new Signaling('http://localhost:5000', this.onConnected, this.onDisconnected, this.onGames),
         server: ''
       }
     },
@@ -31,8 +35,8 @@
       publishOffer(to) {
         this.server = to
         this.signaling.joinGame(to)
-          .then(() => {
-            console.log('handshake done')
+          .then((channels) => {
+            console.log('handshake done', channels)
             /**/
           })
       },
@@ -46,6 +50,7 @@
       },
 
       onGames(data) {
+        console.log('ongames called')
         this.openGames = Object.assign({}, data)
       }
     }

@@ -23,7 +23,7 @@
 </template>
 
 <script>
-  import Signaling from '../webRTC/Signaling.js'
+  import ServerSignaling from '../webRTC/ServerSignaling.js'
   import Games from './Games'
 
   export default {
@@ -32,7 +32,7 @@
     },
     data() {
       return {
-        signaling: new Signaling(this.onConnect, this.onDisconnect, this.onGames, this.onGameOpened),
+        signaling: new ServerSignaling('http://localhost:5000', this.onConnect, this.onDisconnect, this.onGames, this.onGameOpened, this.onNewPlayer),
         connections: {},
         games: {},
         game_name: '',
@@ -53,6 +53,10 @@
       openGame() {
         this.signaling.openGame(this.game_name);
       },
+      onNewPlayer(channels){
+        console.log('new player!')
+        console.log(channels)
+      }
     },
   }
 

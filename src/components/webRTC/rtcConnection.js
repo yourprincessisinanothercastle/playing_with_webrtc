@@ -42,21 +42,44 @@ let config = {
 
 export default class RTCConnection {
 
-  constructor(signaling, target) {
+  constructor(signaling, target, onDatachannelOpen = () => {}) {
     this._sendMessage = function (message) { // not working as arrow
       signaling.sendMessage(target, message);
     };
+
+    this.onDatachannelOpen = onDatachannelOpen;
 
     this.target = target;
     this.dataChannels = {};
 
     this.peerConnection = new RTCPeerConnection(config);
-    this.peerConnection.ondatachannel = (event) => {this.onDataChannel(event)}; // remote peer adds datachannel
-    this.peerConnection.onicecandidate = (event) => {this.onIceCandidate(event)}
+    this.peerConnection.ondatachannel = (event) => {
+      this.onDataChannel(event);
+    }; // remote peer adds datachannel
+    this.peerConnection.onicecandidate = (event) => {
+      this.onIceCandidate(event);
+    };
+
+    this.peerConnection.oniceconnectionstatechange = (event) => {
+      console.log('connectionstate changed', event);
+      console.log(this.peerConnection.iceConnectionState);
+      switch (this.peerConnection.iceConnectionState) {
+        case "connected":
+          console.log('new connection');
+          break;
+        case "disconnected":
+        case "closed":
+          console.error('connection closed', event)
+          break;
+        case "failed":
+          console.error('connection failed', event)
+          break;
+      }
+    }
   }
 
   getChannels() {
-    return Promise.all(this.datachannelPromises)
+    return Promise.all(this.datachannelPromises);
   }
 
   onIceCandidate(event) {
@@ -69,14 +92,18 @@ export default class RTCConnection {
     // other side opens datachannel
     event.channel.onopen = (event) => {
       this.dataChannels[event.target.label] = event.target;
-    }
+      console.log('datachannel!', this.dataChannels)
+      this.onDatachannelOpen(event)
+    };
   }
 
   addDataChannel(label, options = {}) {
     // open a datachannel
     let dc = this.peerConnection.createDataChannel(label, options);
-    dc.onopen = (event) => { 
+    dc.onopen = (event) => {
+      console.log('datachannel!', this.dataChannels)
       this.dataChannels[event.currentTarget.label] = event.currentTarget;
+      this.onDatachannelOpen(event)
     };
     return dc;
   }
