@@ -4,9 +4,11 @@ import RTC from './rtcConnection';
 
 const NEEDED_CHANNELS = 2;
 
-class ServerSignaling extends Signaling{
-  constructor(host, onConnect, onDisconnect, onGames, onGameOpened, onNewPlayer) {
+class ServerSignaling extends Signaling {
+  constructor(host, onConnect, onDisconnect, onGames, onGameOpened, onNewPlayer = () => {}, onPlayerQuit = () => {}) {
     super(host, onConnect, onDisconnect);
+    this.onNewPlayer = onNewPlayer;
+    this.onPlayerQuit = onPlayerQuit;
 
     this.socket.on('games', (data) => {
       onGames(data);
@@ -17,22 +19,39 @@ class ServerSignaling extends Signaling{
     });
 
     this.socket.on('message', (msg) => {
+      let clientId = msg['from'];
+
       switch (msg['data']['type']) {
         case "offer":
-          this.connections[msg['from']] = new RTC(this, msg['from'], this.callbackIfComplete(msg['from'], onNewPlayer));
-          this.connections[msg['from']].answerOffer(msg['data']);
-
+          this.connections[clientId] = new RTC(
+            this,
+            clientId,
+            this.callbackIfComplete(clientId, (channels) => this.onNewPeer(channels)), (event) => this.onPeerDisconnect(event));
+          this.connections[clientId].answerOffer(msg['data']);
           break;
+
         case "iceCandidate":
-          this.connections[msg['from']].addIceCandidate(msg['data']['candidate']);
+          this.connections[clientId].addIceCandidate(msg['data']['candidate']);
           break;
       }
     });
   }
 
+  onNewPeer(channels) {
+    console.log('player joined');
+    this.onNewPlayer(channels);
+  }
+
+  onPeerDisconnect(clientId) {
+    console.log('player quit');
+    this.connections[clientId].close();
+    delete this.connections[clientId];
+    this.onPlayerQuit();
+  }
+
   callbackIfComplete(client_id, resolveCallback) {
     return (event) => {
-      console.log('got channel')
+      console.log('got channel');
       if (Object.keys(this.connections[client_id].dataChannels).length == NEEDED_CHANNELS) {
         console.log('done! resolving with', this.connections[client_id].dataChannels);
         resolveCallback(this.connections[client_id].dataChannels);
@@ -51,4 +70,4 @@ class ServerSignaling extends Signaling{
   }
 }
 
-export default ServerSignaling
+export default ServerSignaling;

@@ -42,15 +42,15 @@ let config = {
 
 export default class RTCConnection {
 
-  constructor(signaling, target, onDatachannelOpen = () => {}) {
+  constructor(signaling, target, onDatachannelOpen = () => {}, onDisconnect = () => {}) {
     this._sendMessage = function (message) { // not working as arrow
       signaling.sendMessage(target, message);
     };
 
-    this.onDatachannelOpen = onDatachannelOpen;
+    this.onDatachannelOpen = (event) => onDatachannelOpen(event);
 
     this.target = target;
-    this.dataChannels = {};
+    this.dataChannels = {}; // established channels
 
     this.peerConnection = new RTCPeerConnection(config);
     this.peerConnection.ondatachannel = (event) => {
@@ -69,13 +69,16 @@ export default class RTCConnection {
           break;
         case "disconnected":
         case "closed":
-          console.error('connection closed', event)
-          break;
         case "failed":
+          onDisconnect(this.target)
           console.error('connection failed', event)
           break;
       }
     }
+  }
+
+  close(){
+    this.peerConnection.close();
   }
 
   getChannels() {

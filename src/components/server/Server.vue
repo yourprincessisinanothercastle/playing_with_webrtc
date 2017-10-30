@@ -17,6 +17,11 @@
         <div class="column">
           <Games :games="games"></Games>
         </div>
+        <div class="column">
+          <div v-for="id in Object.keys(players)">
+            {{ id }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -32,11 +37,12 @@
     },
     data() {
       return {
-        signaling: new ServerSignaling('http://localhost:5000', this.onConnect, this.onDisconnect, this.onGames, this.onGameOpened, this.onNewPlayer),
-        connections: {},
+        signaling: new ServerSignaling('http://localhost:5000', this.onConnect, this.onDisconnect, this.onGames, this.onGameOpened,
+          this.onNewPlayer),
         games: {},
         game_name: '',
-        gameIsOpen: false
+        gameIsOpen: false,
+        players: {}
       }
     },
 
@@ -53,9 +59,9 @@
       openGame() {
         this.signaling.openGame(this.game_name);
       },
-      onNewPlayer(channels){
+      onNewPlayer(channels) {
         console.log('new player!')
-        console.log(channels)
+        this.players = Object.assign({}, this.signaling.connections)
       }
     },
   }
