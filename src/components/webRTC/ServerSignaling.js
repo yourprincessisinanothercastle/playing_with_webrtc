@@ -58,6 +58,15 @@ class ServerSignaling extends Signaling {
       console.log('got channel');
       if (Object.keys(this.connections[client_id].dataChannels).length == NEEDED_CHANNELS) {
         console.log('done! resolving with', this.connections[client_id].dataChannels);
+
+        // todo
+        this.connections[client_id].dataChannels['reliable'].onmessage = (message) => {
+          console.log('message from', client_id, 'reliable');
+        }
+        this.connections[client_id].dataChannels['unreliable'].onmessage = (message) => {
+          console.log('message from', client_id, 'unreliable');
+        }
+
         resolveCallback(this.connections[client_id].dataChannels);
       }
     };
