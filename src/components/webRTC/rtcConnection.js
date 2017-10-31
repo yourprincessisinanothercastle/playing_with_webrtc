@@ -70,7 +70,7 @@ export default class RTCConnection {
         case "disconnected":
         case "closed":
         case "failed":
-          onDisconnect(this.target)
+          onDisconnect(target)
           console.error('connection failed', event)
           break;
       }

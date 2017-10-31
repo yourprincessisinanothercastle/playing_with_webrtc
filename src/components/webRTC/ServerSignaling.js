@@ -26,7 +26,8 @@ class ServerSignaling extends Signaling {
           this.connections[clientId] = new RTC(
             this,
             clientId,
-            this.callbackIfComplete(clientId, (channels) => this.onNewPeer(channels)), (event) => this.onPeerDisconnect(event));
+            this.callbackIfComplete(clientId, (channels) => this.onNewPeer(channels)),
+            (clientId) => this.onPeerDisconnect(clientId));
           this.connections[clientId].answerOffer(msg['data']);
           break;
 
@@ -43,10 +44,13 @@ class ServerSignaling extends Signaling {
   }
 
   onPeerDisconnect(clientId) {
-    console.log('player quit');
-    this.connections[clientId].close();
-    delete this.connections[clientId];
-    this.onPlayerQuit();
+    if (this.connections[clientId]) {
+      console.log('player quit', clientId);
+      console.log(this.connections.clientId);
+      this.connections[clientId].close();
+      delete this.connections[clientId];
+      this.onPlayerQuit();
+    }
   }
 
   callbackIfComplete(client_id, resolveCallback) {
