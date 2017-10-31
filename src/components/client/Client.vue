@@ -26,7 +26,7 @@
     data() {
       return {
         openGames: {},
-        signaling: new Signaling('http://kwoh.de:5000', this.onConnected, this.onDisconnected, this.onGames),
+        signaling: new Signaling('https://ws.kwoh.de', this.onConnected, this.onDisconnected, this.onGames),
         server: ''
       }
     },
