@@ -14,10 +14,11 @@
             </div>
           </div>
         </div>
-        <div class="column">
+        <div class="column" v-if="!gameIsOpen">
           <Games :games="games"></Games>
         </div>
-        <div class="column">
+        <div class="column" v-else="">
+          <h5 class="title">players</h5>
           <div v-for="id in Object.keys(players)">
             {{ id }}
           </div>
@@ -38,7 +39,7 @@
     data() {
       return {
         signaling: new ServerSignaling('https://ws.kwoh.de', this.onConnect, this.onDisconnect, this.onGames, this.onGameOpened,
-          this.onNewPlayer),
+          this.onNewPlayer, this.onPlayerQuit),
         games: {},
         game_name: '',
         gameIsOpen: false,
@@ -62,6 +63,9 @@
       onNewPlayer(channels) {
         console.log('new player!')
         this.players = Object.assign({}, this.signaling.connections)
+      },
+      onPlayerQuit(channels) {
+        this.onNewPlayer(channels)
       }
     },
   }

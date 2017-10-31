@@ -13,6 +13,9 @@
               no games open
             </div>
           </div>
+          <div class="column">
+            <router-link :to="{ name: 'Server' }">...or be the server</router-link>
+          </div>
         </div>
       </div>
     </div>
