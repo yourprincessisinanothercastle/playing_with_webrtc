@@ -61,10 +61,11 @@ class ServerSignaling extends Signaling {
 
         // todo
         this.connections[client_id].dataChannels['reliable'].onmessage = (message) => {
-          console.log('message from', client_id, 'reliable');
+          console.log('message from', client_id, 'reliable:', message);
         }
+        
         this.connections[client_id].dataChannels['unreliable'].onmessage = (message) => {
-          console.log('message from', client_id, 'unreliable');
+          console.log('message from', client_id, 'unreliable:', message);
         }
 
         resolveCallback(this.connections[client_id].dataChannels);
