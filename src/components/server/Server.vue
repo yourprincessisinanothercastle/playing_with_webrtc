@@ -37,7 +37,7 @@
     },
     data() {
       return {
-        signaling: new ServerSignaling('http://localhost:5000', this.onConnect, this.onDisconnect, this.onGames, this.onGameOpened,
+        signaling: new ServerSignaling('http://kwoh.de:5000', this.onConnect, this.onDisconnect, this.onGames, this.onGameOpened,
           this.onNewPlayer),
         games: {},
         game_name: '',

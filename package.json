@@ -9,14 +9,11 @@
     "start": "npm run dev",
     "build": "node build/build.js",
     "unit": "cross-env BABEL_ENV=test karma start test/unit/karma.conf.js --single-run",
-    "e2e": "node test/e2e/runner.js",
-    "test": "npm run unit && npm run e2e"
+    "test": "npm run unit"
   },
   "dependencies": {
-    "bufferutil": "^3.0.2",
     "bulma": "^0.6.0",
     "mqtt": "^2.13.1",
-    "utf-8-validate": "^3.0.3",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
   },
