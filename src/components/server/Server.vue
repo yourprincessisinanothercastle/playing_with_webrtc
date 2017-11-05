@@ -8,6 +8,9 @@
               <input class="input" type="text" v-model="game_name" placeholder="open game">
             </div>
             <div class="control">
+                <input class="input" type="text" v-model="seed" placeholder="seed">
+              </div>
+            <div class="control">
               <a class="button is-info" @click="openGame()" :disabled="gameIsOpen">
                 open
               </a>
@@ -17,10 +20,20 @@
         <div class="column" v-if="!gameIsOpen">
           <Games :games="games"></Games>
         </div>
-        <div class="column" v-else="">
-          <h5 class="title">players</h5>
-          <div v-for="id in Object.keys(players)">
-            {{ id }}
+      </div>
+    </div>
+
+    <div class="section" v-if="gameIsOpen">
+      <div class="container">
+        <div class="columns">
+          <div class="column">
+            <h5 class="title">players</h5>
+            <div v-for="id in Object.keys(players)">
+              {{ id }}
+            </div>
+          </div>
+          <div class="column">
+            <MapComponent :map="map" :seed="seed"></MapComponent>
           </div>
         </div>
       </div>
@@ -31,10 +44,13 @@
 <script>
   import ServerSignaling from '../webRTC/ServerSignaling.js'
   import Games from './Games'
+  import Map from './map/Map'
+  import MapComponent from './Map'
 
   export default {
     components: {
-      Games
+      Games,
+      MapComponent
     },
     data() {
       return {
@@ -42,8 +58,10 @@
           this.onNewPlayer, this.onPlayerQuit),
         games: {},
         game_name: '',
+        seed: '',
         gameIsOpen: false,
-        players: {}
+        players: {},
+        map: new Map()
       }
     },
 

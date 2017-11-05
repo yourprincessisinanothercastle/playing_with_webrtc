@@ -12,8 +12,10 @@
     "test": "npm run unit"
   },
   "dependencies": {
+    "alea": "0.0.9",
     "bulma": "^0.6.0",
     "mqtt": "^2.13.1",
+    "simplex-noise": "^2.3.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
   },
