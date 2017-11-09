@@ -86,7 +86,7 @@
       onNewPlayer(client_id, channels) {
         console.log('new player!')
 
-        game.addPlayer(client_id, channels['reliable'], channels['unreliable'])
+        this.game.addPlayer(client_id, channels['reliable'], channels['unreliable'])
         this.players = Object.assign({}, this.game.players)
       },
 

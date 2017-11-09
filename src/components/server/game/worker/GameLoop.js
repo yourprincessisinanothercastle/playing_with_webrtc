@@ -3,6 +3,7 @@
  */
 
 import Loop from 'gameloop';
+import constants from '../../../shared/constants';
 
 export default class GameLoop {
   constructor() {
@@ -26,7 +27,7 @@ export default class GameLoop {
   }
 
   update(delta, time, keys = false /*dev only*/ ) {
-    self.postMessage({type: 'msg-broadcast', data: 'nop'})
+    self.postMessage({type: constants.WORKERMESSAGETYPES.BROADCAST, data: 'nop'})
     //console.log('done for this loop!')
   }
 

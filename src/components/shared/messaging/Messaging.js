@@ -62,20 +62,29 @@ export default class Messaging {
   }
 
   broadcastUnreliable(msg) {
-    this.broadcast(msg, false);
+    for (let id in this.playerChannels) {
+      this.sendMessageUnreliable(id, msg);
+    }
   }
 
 
   broadcastReliable(msg) {
-    this.broadcast(msg, true);
+    for (let id in this.playerChannels) {
+      this.sendMessageReliable(id, msg);
+    }
   }
 
-  broadcast(msg, isReliable) {
+  sendMessageReliable(toID, message){
+    this.sendMessage(toID, message, true);
+  }
+
+  sendMessageUnreliable(toID, message){
+    this.sendMessage(toID, message, false);
+  }
+
+  sendMessage(toID, message, isReliable){
     let channel = isReliable ? 'reliable' : 'unreliable';
-    for (let id in this.playerChannels) {
-      console.log('bc')
-      this.playerChannels[id][channel].send(JSON.stringify(msg));
-    }
+    this.playerChannels[toID][channel].send(JSON.stringify(message));
   }
 }
 
