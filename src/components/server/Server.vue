@@ -8,8 +8,8 @@
               <input class="input" type="text" v-model="game_name" placeholder="open game">
             </div>
             <div class="control">
-                <input class="input" type="text" v-model="seed" placeholder="seed">
-              </div>
+              <input class="input" type="text" v-model="seed" placeholder="seed">
+            </div>
             <div class="control">
               <a class="button is-info" @click="openGame()" :disabled="gameIsOpen">
                 open
@@ -33,7 +33,7 @@
             </div>
           </div>
           <div class="column">
-            <MapComponent :map="map" :seed="seed"></MapComponent>
+            <MapComponent :map="game.map" :seed="seed"></MapComponent>
           </div>
         </div>
       </div>
@@ -42,10 +42,12 @@
 </template>
 
 <script>
+  import Games from './components/Games'
+  import MapComponent from './components/Map'
+  
   import ServerSignaling from '../webRTC/ServerSignaling.js'
-  import Games from './Games'
-  import Map from './map/Map'
-  import MapComponent from './Map'
+  import Game from './game/Game'
+    
 
   export default {
     components: {
@@ -54,14 +56,14 @@
     },
     data() {
       return {
-        signaling: new ServerSignaling('https://ws.kwoh.de', this.onConnect, this.onDisconnect, this.onGames, this.onGameOpened,
-          this.onNewPlayer, this.onPlayerQuit),
         games: {},
         game_name: '',
         seed: '',
         gameIsOpen: false,
         players: {},
-        map: new Map()
+        signaling: new ServerSignaling('https://ws.kwoh.de', this.onConnect, this.onDisconnect, this.onGames, this.onGameOpened,
+          this.onNewPlayer, this.onPlayerQuit),
+        game: null
       }
     },
 
@@ -72,18 +74,24 @@
         this.games = Object.assign({}, games)
       },
       onGameOpened() {
+        // pos answer from signaling
         console.log('disableing')
-        this.gameIsOpen = true
+        this.gameIsOpen = true;
+        this.game = new Game
       },
       openGame() {
+        // ask signaling for a new game
         this.signaling.openGame(this.game_name);
       },
-      onNewPlayer(channels) {
+      onNewPlayer(client_id, channels) {
         console.log('new player!')
-        this.players = Object.assign({}, this.signaling.connections)
+
+        game.addPlayer(client_id, channels['reliable'], channels['unreliable'])
+        this.players = Object.assign({}, this.game.players)
       },
+
       onPlayerQuit(channels) {
-        this.onNewPlayer(channels)
+        // todo
       }
     },
   }

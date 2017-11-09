@@ -15,7 +15,6 @@
       }
     },
     mounted() {
-      this.map.setSeed(this.seed)
 
       let canvas = this.$refs.mapCanvas
       var ctx = canvas.getContext("2d");

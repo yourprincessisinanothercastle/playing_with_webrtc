@@ -14,7 +14,10 @@
   "dependencies": {
     "alea": "0.0.9",
     "bulma": "^0.6.0",
+    "gameloop": "^1.1.4",
+    "mainloop.js": "^1.0.4",
     "mqtt": "^2.13.1",
+    "pixi.js": "^4.6.0",
     "simplex-noise": "^2.3.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"

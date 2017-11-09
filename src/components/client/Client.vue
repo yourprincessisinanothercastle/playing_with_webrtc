@@ -26,19 +26,27 @@
         </div>
       </div>
     </div>
+    <div class="section" v-if="handshakeDone">
+      <div class="container">
+        <Game :channels=channels></Game>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
   import Signaling from '../webRTC/ClientSignaling'
+  import Game from './Game'
 
   export default {
+    components: {Game},
     data() {
       return {
         openGames: {},
         signaling: new Signaling('https://ws.kwoh.de', this.onConnected, this.onDisconnected, this.onGames),
         server: '',
-        channels: {}
+        channels: {},
+        handshakeDone: false
       }
     },
 
@@ -48,6 +56,14 @@
         this.signaling.joinGame(to)
           .then((channels) => {
             this.channels = channels
+            this.handshakeDone = true
+
+            this.channels['reliable'].onmessage = (message) => {
+              console.log('got reliable', JSON.parse(message.data))
+            }
+            this.channels['unreliable'].onmessage = (message) => {
+              console.log('got unreliable', JSON.parse(message.data))
+            }
             /**/
           })
       },
@@ -65,11 +81,11 @@
         this.openGames = Object.assign({}, data)
       },
 
-      sendReliable(){
-          this.channels['reliable'].send('reliable stuff')
+      sendReliable() {
+        this.channels['reliable'].send('reliable stuff')
       },
-      
-      sendUnreliable(){
+
+      sendUnreliable() {
         this.channels['unreliable'].send('unreliable stuff')
       },
     }

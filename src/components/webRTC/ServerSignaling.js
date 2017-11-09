@@ -26,7 +26,7 @@ class ServerSignaling extends Signaling {
           this.connections[clientId] = new RTC(
             this,
             clientId,
-            this.callbackIfComplete(clientId, (channels) => this.onNewPeer(channels)),
+            this.callbackIfComplete(clientId),
             (clientId) => this.onPeerDisconnect(clientId));
           this.connections[clientId].answerOffer(msg['data']);
           break;
@@ -36,11 +36,6 @@ class ServerSignaling extends Signaling {
           break;
       }
     });
-  }
-
-  onNewPeer(channels) {
-    console.log('player joined');
-    this.onNewPlayer(channels);
   }
 
   onPeerDisconnect(clientId) {
@@ -53,22 +48,13 @@ class ServerSignaling extends Signaling {
     }
   }
 
-  callbackIfComplete(client_id, resolveCallback) {
+  callbackIfComplete(client_id) {
     return (event) => {
       console.log('got channel');
       if (Object.keys(this.connections[client_id].dataChannels).length == NEEDED_CHANNELS) {
         console.log('done! resolving with', this.connections[client_id].dataChannels);
-
-        // todo
-        this.connections[client_id].dataChannels['reliable'].onmessage = (message) => {
-          console.log('message from', client_id, 'reliable:', message);
-        }
         
-        this.connections[client_id].dataChannels['unreliable'].onmessage = (message) => {
-          console.log('message from', client_id, 'unreliable:', message);
-        }
-
-        resolveCallback(this.connections[client_id].dataChannels);
+        this.onNewPlayer(client_id, this.connections[client_id].dataChannels);
       }
     };
   }

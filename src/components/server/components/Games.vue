@@ -8,7 +8,7 @@
 </template>
 
 <script>
-  import Signaling from '../webRTC/Signaling.js'
+  import Signaling from '../../webRTC/Signaling.js'
 
   export default {
     props: ['games']
