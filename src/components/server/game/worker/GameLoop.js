@@ -17,26 +17,25 @@ export default class Game {
     this.loop = null;
   }
 
-  init(seed) {
-    console.log('initializing gameworker...')
+  init(seed, tileWorkerPort) {
+    console.log('initializing gameworker...');
     this.seed = seed;
 
-    this.loop = new Loop({
-      fps: 1
-    });
+    this.loop = new Loop({ fps: 1 });
 
     this.loop.on('update', (delta, time) => {
       this.update(delta, time);
     });
 
-    this.map = new GameMap(seed);
+    this.map = new GameMap(seed, tileWorkerPort);
     this.map.getTileImage(0, 0)
       .then((imageData) => {
+        console.log('sending imagedata', imageData);
         self.postMessage({
-          type: constants.WORKER_MAIN_MESSAGETYPES.TILE,
+          type: constants.WORKER_MAIN_MESSAGETYPES.TILEIMAGE,
           x: 0, y: 0,
-          data: imageData
-        });
+          data: imageData.buffer,
+        }, [imageData.buffer]);
       });
     this.start();
   }
@@ -55,12 +54,6 @@ export default class Game {
     }
   }
 
-  sendTileImageToMain() {
-    self.postMessage({
-      'tile': this.map.getTileImage(0, 0)
-    })
-  }
-
 
   start() {
     this.loop.start();
@@ -74,6 +67,7 @@ export default class Game {
     this.processMessages();
   }
 
-  draw(renderer, dt) {}
+  draw(renderer, dt) {
+  }
 
 }

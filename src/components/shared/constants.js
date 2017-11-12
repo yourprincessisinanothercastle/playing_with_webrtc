@@ -1,33 +1,33 @@
+
+const TILESIZE = 32;
+
 const MESSAGING = 'messaging';
 const TILE = 'tile';
+const TILEIMAGE = 'tileimage';
 
 const WORKER_MAIN_MESSAGETYPES = {
-    MESSAGING,
-    TILE
-}
+  MESSAGING,
+  TILE,
+  TILEIMAGE,
+};
 
-const INIT = 'init'
+const INIT = 'init';
 const MAIN_WORKER_MESSAGETYPES = {
-    INIT
-}
+  INIT,
+};
 
-const UNICAST = 'msg'
-
-const RELIABLE = 'reliable'
-const UNRELIABLE = 'unreliable'
-const RTCMESSAGETYPE = 'msgtype'
+const RELIABLE = 'reliable';
+const UNRELIABLE = 'unreliable';
+const RTCMESSAGETYPE = 'msgtype';
 
 const RELIABILITY = {
-    RELIABLE, UNRELIABLE
-}
-
-const PAYLOAD = 'payload'
-
+  RELIABLE, UNRELIABLE,
+};
 
 export default {
-    RTCMESSAGETYPE,
-    WORKER_MAIN_MESSAGETYPES,
-    MAIN_WORKER_MESSAGETYPES,
-    RELIABILITY,
-
-}
+  RTCMESSAGETYPE,
+  WORKER_MAIN_MESSAGETYPES,
+  MAIN_WORKER_MESSAGETYPES,
+  RELIABILITY,
+  TILESIZE,
+};

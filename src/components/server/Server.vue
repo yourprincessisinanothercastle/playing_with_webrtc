@@ -44,10 +44,10 @@
 <script>
   import Games from './components/Games'
   import MapComponent from './components/Map'
-  
+
   import ServerSignaling from '../webRTC/ServerSignaling.js'
   import Game from './game/GameInterface'
-    
+
 
   export default {
     components: {
@@ -58,7 +58,7 @@
       return {
         games: {},
         game_name: '',
-        seed: '',
+        seed: '123',
         gameIsOpen: false,
         players: {},
         signaling: new ServerSignaling('https://ws.kwoh.de', this.onConnect, this.onDisconnect, this.onGames, this.onGameOpened,
@@ -95,7 +95,8 @@
         // todo
       },
 
-      onAddTile(tile){
+      onAddTile(x, y, tileData){
+        // todo
         this.tiles = Object.assign({}, this.tiles, tile)
       }
     },

@@ -1,57 +1,85 @@
-
-import TileWorker from 'worker-loader!./TileWorker.js';
+import constants from '../../../../shared/constants';
 
 export default class Map {
-  constructor() {
+  constructor(seed, tileworkerMessagePort) {
     this.cache = {};
     this.imageCache = {};
-    this.seed = undefined;
-    this.freq = 500;
-  }
-
-  setSeed(seed) {
     this.seed = seed;
+    this.freq = 500;
+
+    this.tileWorkerPort = tileworkerMessagePort;
+    this.tileWorkerPort.onmessage = (msg) => {
+      return this.onTileWorkerMessage(msg);
+    };
+    this.tileWorkerTasks = {};
   }
 
   getTile(x, y) {
     return new Promise((resolve, reject) => {
-      let cache = this.cache;
+      const cache = this.cache;
       if (cache[x] && cache[x][y]) {
         resolve(cache[x][y]);
       } else {
         if (!cache[x]) cache[x] = {};
-        return this._createTile(x, y, this.freq, this.seed)
-          .then(({heightTile, tempTile}) => {
-            cache[x][y] = {heightTile, tempTile};
+        return this._addTileWorkerTask(x, y, this.freq, this.seed, constants.TILESIZE)
+          .then(layers => {
+            cache[x][y] = layers;
             resolve(cache[x][y]);
           });
       }
     });
   }
 
-  _createTile(x, y, freq, seed) {
+  _addTileWorkerTask(x, y, freq, seed, tileSize) {
     return new Promise((resolve, reject) => {
-      let tileworker = new TileWorker();
-      tileworker.postMessage({x, y, freq, seed});
-      tileworker.onmessage = (msg) => {
-        console.log('got tile', x, y)
-        resolve(msg.data);
+      // resolves in onTileWorkerMessage when tile is processed
+      if (!this.tileWorkerTasks[x]) this.tileWorkerTasks[x] = {};
+      this.tileWorkerTasks[x][y] = {
+        resolve,
+        reject,
       };
+      console.log('added task');
+      console.log('current tasks:', this.tileWorkerTasks);
+      this.tileWorkerPort.postMessage({
+        x, y, freq, seed, tileSize,
+      });
     });
   }
 
-  getTileImage(x, y) {
-    return this.getTile(x, y).then(data => {
-      return this._genTileImage(data)
-    })
+  onTileWorkerMessage(msg) {
+    console.log('msg from tileworker', msg)
+    const {
+      x, y, heightLayer, tempLayer,
+    } = msg.data;
+
+    this.tileWorkerTasks[x][y].resolve({
+      heightLayer,
+      tempLayer,
+    });
+
+    delete this.tileWorkerTasks[x][y];
   }
 
-  _genTileImage({heightTile, tempTile}) {
-    let imageData = new Uint8ClampedArray(this.tilesize * this.tilesize * 4);
-    for (let i = 0; i <= this.tilesize * this.tilesize; i++) {
-      imageData[i * 4] = tempTile[i] / 8 * 255; /* green */
-      imageData[i * 4 + 1] = heightTile[i] / 8 * 255; // g
-      imageData[i * 4 + 2] = heightTile[i] / 8 * 255; // b
+  getTileImage(x, y) {
+    return this.getTile(x, y)
+      .then(tileLayers => {
+        return Map._genTileImage(tileLayers);
+      });
+  }
+
+  static _genTileImage(tileLayers) {
+    const {
+      heightLayer, tempLayer,
+    } = tileLayers;
+
+    console.log('creating iomage from', tileLayers, constants.TILESIZE);
+
+    const imageData = new Uint8ClampedArray(constants.TILESIZE * constants.TILESIZE * 4);
+    for (let i = 0; i <= constants.TILESIZE * constants.TILESIZE; i++) {
+      imageData[i * 4] = tempLayer[i] / 8 * 255;
+      /* green */
+      imageData[i * 4 + 1] = heightLayer[i] / 8 * 255; // g
+      imageData[i * 4 + 2] = heightLayer[i] / 8 * 255; // b
       imageData[i * 4 + 3] = 255;
     }
     return imageData;
