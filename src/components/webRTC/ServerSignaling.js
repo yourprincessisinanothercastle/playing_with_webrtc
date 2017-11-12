@@ -2,7 +2,7 @@ import socketio from 'socket.io-client';
 import Signaling from './Signaling';
 import RTC from './rtcConnection';
 
-const NEEDED_CHANNELS = 2;
+const NEEDED_CHANNELS = 3;
 
 class ServerSignaling extends Signaling {
   constructor(host, onConnect, onDisconnect, onGames, onGameOpened, onNewPlayer = () => {}, onPlayerQuit = () => {}) {

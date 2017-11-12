@@ -33,7 +33,7 @@
             </div>
           </div>
           <div class="column">
-            <MapComponent :map="game.map" :seed="seed"></MapComponent>
+            <MapComponent :tiles="tiles"></MapComponent>
           </div>
         </div>
       </div>
@@ -46,7 +46,7 @@
   import MapComponent from './components/Map'
   
   import ServerSignaling from '../webRTC/ServerSignaling.js'
-  import Game from './game/Game'
+  import Game from './game/GameInterface'
     
 
   export default {
@@ -63,7 +63,8 @@
         players: {},
         signaling: new ServerSignaling('https://ws.kwoh.de', this.onConnect, this.onDisconnect, this.onGames, this.onGameOpened,
           this.onNewPlayer, this.onPlayerQuit),
-        game: null
+        game: null,
+        tiles: {}
       }
     },
 
@@ -77,7 +78,7 @@
         // pos answer from signaling
         console.log('disableing')
         this.gameIsOpen = true;
-        this.game = new Game
+        this.game = new Game(this.seed, this.onAddTile)
       },
       openGame() {
         // ask signaling for a new game
@@ -92,6 +93,10 @@
 
       onPlayerQuit(channels) {
         // todo
+      },
+
+      onAddTile(tile){
+        this.tiles = Object.assign({}, this.tiles, tile)
       }
     },
   }

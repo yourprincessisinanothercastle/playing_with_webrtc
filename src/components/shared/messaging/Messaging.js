@@ -1,3 +1,9 @@
+/**
+ * "low level" webrtc messaging
+ * keeps track of players and their channels,
+ * sends and gets messages
+ * 
+ */
 export default class Messaging {
   constructor() {
     this.connectedPlayers = [];
@@ -22,11 +28,11 @@ export default class Messaging {
     }
 
     reliableChannel.onmessage = (message) => {
-      this.addMessage(id, 'reliable', message);
+      this._addMessage(id, 'reliable', message);
     };
 
     unreliableChannel.onmessage = (message) => {
-      this.addMessage(id, 'unreliable', message);
+      this._addMessage(id, 'unreliable', message);
     };
   }
 
@@ -36,11 +42,21 @@ export default class Messaging {
     delete this.playerChannels[id];
   }
 
-  addMessage(id, channel, message) {
-    // i guess its safe to call this async..?
+  /**
+   * add a message to the queue
+   * 
+   * @param {*} id 
+   * @param {*} channel 
+   * @param {*} message 
+   */
+  _addMessage(id, channel, message) {
     this.playerInputQueues[id][channel].push(message.data)
   }
 
+  /**
+   * yields all messages that are currently in the queue
+   * todo: what happens if a message is put in here while we are processing?
+   */
   * getMessages() {
     let playerQueues = Object.keys(this.playerInputQueues);
     for (let id in this.playerInputQueues) {
@@ -67,25 +83,32 @@ export default class Messaging {
     }
   }
 
-
   broadcastReliable(msg) {
     for (let id in this.playerChannels) {
       this.sendMessageReliable(id, msg);
     }
   }
 
+  multicastReliable(toIDs, message){
+    toIDs.forEach(id => {
+      sendMessageReliable(id, message)
+    });
+  }
+
+  multicastUnreliable(toIds, message){
+    toIDs.forEach(id => {
+      sendMessageUnreliable(id, message)
+    });
+  }
+
   sendMessageReliable(toID, message){
-    this.sendMessage(toID, message, true);
+    this.playerChannels[toID]['reliable'].send(JSON.stringify(message));
   }
 
   sendMessageUnreliable(toID, message){
-    this.sendMessage(toID, message, false);
+    this.playerChannels[toID]['unreliable'].send(JSON.stringify(message));
   }
 
-  sendMessage(toID, message, isReliable){
-    let channel = isReliable ? 'reliable' : 'unreliable';
-    this.playerChannels[toID][channel].send(JSON.stringify(message));
-  }
 }
 
 

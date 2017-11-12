@@ -15,6 +15,7 @@ export default class Tile {
   }
 
   genTile(seed) {
+    console.log('generating tile', this.x, this.y)
     let data = new Uint8Array(this.tilesize * this.tilesize);
 
     let numberGenerator = new Alea(seed);
@@ -34,20 +35,5 @@ export default class Tile {
 
   scaleUp(value, steps = 8) {
     return parseInt(Math.abs(value * steps));
-  }
-
-  /*getXY(x, y) {
-    return this.tile[y * this.tilesize + x];
-  }*/
-
-  getImage() {
-    let imageData = new Uint8ClampedArray(this.tilesize * this.tilesize * 4);
-    for (let i = 0; i <= this.tilesize * this.tilesize; i++) {
-      imageData[i * 4] = this.tempTile[i] / 8 * 255; /* green */
-      imageData[i * 4 + 1] = this.heightTile[i] / 8 * 255; // g
-      imageData[i * 4 + 2] = this.heightTile[i] / 8 * 255; // b
-      imageData[i * 4 + 3] = 255;
-    }
-    return imageData;
   }
 }

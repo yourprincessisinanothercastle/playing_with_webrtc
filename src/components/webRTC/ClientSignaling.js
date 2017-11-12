@@ -3,7 +3,7 @@ import Signaling from './Signaling';
 
 import RTC from './rtcConnection';
 
-const NEEDED_CHANNELS = 2;
+const NEEDED_CHANNELS = 3;
 
 class ClientSignaling extends Signaling {
   constructor(host, onConnect, onDisconnect, onGames) {
@@ -49,6 +49,7 @@ class ClientSignaling extends Signaling {
       this.connections[server_id] = new RTC(this, server_id, this.resolveIfComplete(server_id, resolve));
 
       this.connections[server_id].addDataChannel("reliable", {});
+      this.connections[server_id].addDataChannel("data", {});
       this.connections[server_id].addDataChannel("unreliable", {
         maxRetransmits: 0,
         ordered: false
