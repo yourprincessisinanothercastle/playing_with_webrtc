@@ -1,7 +1,7 @@
 import GameLoop from './GameLoop';
-import constants from '../../../shared/constants'
+import constants from '../../../shared/constants';
 
-let game = new GameLoop();
+const game = new GameLoop();
 
 self.onmessage = (msg) => {
   console.log('got msg', msg.data)

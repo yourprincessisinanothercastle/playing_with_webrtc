@@ -3,7 +3,6 @@ import constants from '../../../../shared/constants';
 export default class Map {
   constructor(seed, tileworkerMessagePort) {
     this.cache = {};
-    this.imageCache = {};
     this.seed = seed;
     this.freq = 500;
 
@@ -21,6 +20,7 @@ export default class Map {
         resolve(cache[x][y]);
       } else {
         if (!cache[x]) cache[x] = {};
+
         return this._addTileWorkerTask(x, y, this.freq, this.seed, constants.TILESIZE)
           .then(layers => {
             cache[x][y] = layers;
@@ -46,11 +46,11 @@ export default class Map {
     });
   }
 
-  onTileWorkerMessage(msg) {
-    console.log('msg from tileworker', msg)
+  onTileWorkerMessage({data}) {
+    console.log('got tile', data.x, data.y, 'from tileworker');
     const {
       x, y, heightLayer, tempLayer,
-    } = msg.data;
+    } = data;
 
     this.tileWorkerTasks[x][y].resolve({
       heightLayer,

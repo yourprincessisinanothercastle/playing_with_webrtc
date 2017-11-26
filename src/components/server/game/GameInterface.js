@@ -44,14 +44,14 @@ export default class Game {
 
   processWorkerMessage(msg) {
     if (constants.WORKER_MAIN_MESSAGETYPES.TILEIMAGE) {
-      console.log('got tile', msg.data);
+      console.log('got tile', new Uint8ClampedArray(msg.data.data));
       this.onAddTile(msg.data.x, msg.data.y, msg.data.data);
     } else {
       console.error('unknown message', msg.data);
     }
   }
 
-  addPlayer(client_id, reliableChannel, unreliableChannel) {
-    messaging.addPlayer(client_id, reliableChannel, unreliableChannel)
+  addPlayer(client_id, reliableChannel, unreliableChannel, dataChannel) {
+    messaging.addPlayer(client_id, reliableChannel, unreliableChannel, dataChannel);
   }
 }

@@ -42,7 +42,8 @@ export default class Game {
 
   processMessages() {
     while (this.mainEventInputQueue.length > 0) {
-      msg = this.mainEventInputQueue.shift();
+      const msg = this.mainEventInputQueue.shift();
+
       switch (msg.data['type']) {
         case constants.MAIN_WORKER_MESSAGETYPES.START:
           this.start()

@@ -2,7 +2,7 @@
  * "low level" webrtc messaging
  * keeps track of players and their channels,
  * sends and gets messages
- * 
+ *
  */
 export default class Messaging {
   constructor() {
@@ -15,17 +15,19 @@ export default class Messaging {
     }
   }
 
-  addPlayer(id, reliableChannel, unreliableChannel) {
+  addPlayer(id, reliableChannel, unreliableChannel, dataChannel) {
     this.connectedPlayers.push(id);
     this.playerInputQueues[id] = {
       reliable: [],
-      unreliable: []
+      unreliable: [],
+      data: [],
     };
 
     this.playerChannels[id] = {
       reliable: reliableChannel,
-      unreliable: unreliableChannel
-    }
+      unreliable: unreliableChannel,
+      data: dataChannel,
+    };
 
     reliableChannel.onmessage = (message) => {
       this._addMessage(id, 'reliable', message);
@@ -44,13 +46,13 @@ export default class Messaging {
 
   /**
    * add a message to the queue
-   * 
-   * @param {*} id 
-   * @param {*} channel 
-   * @param {*} message 
+   *
+   * @param {*} id
+   * @param {*} channel
+   * @param {*} message
    */
   _addMessage(id, channel, message) {
-    this.playerInputQueues[id][channel].push(message.data)
+    this.playerInputQueues[id][channel].push(message.data);
   }
 
   /**
@@ -71,6 +73,12 @@ export default class Messaging {
         yield {
           client_id: id,
           message: this.playerInputQueues[id]['unreliable'].shift()
+        };
+      }
+      while (this.playerInputQueues[id]['data'].length > 0) {
+        yield {
+          client_id: id,
+          message: this.playerInputQueues[id]['data'].shift()
         };
       }
       return;

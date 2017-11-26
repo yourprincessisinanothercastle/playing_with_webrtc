@@ -32,9 +32,6 @@
               {{ id }}
             </div>
           </div>
-          <div class="column">
-            <MapComponent :tiles="tiles"></MapComponent>
-          </div>
         </div>
       </div>
     </div>
@@ -43,7 +40,6 @@
 
 <script>
   import Games from './components/Games'
-  import MapComponent from './components/Map'
 
   import ServerSignaling from '../webRTC/ServerSignaling.js'
   import Game from './game/GameInterface'
@@ -52,7 +48,6 @@
   export default {
     components: {
       Games,
-      MapComponent
     },
     data() {
       return {
@@ -69,25 +64,32 @@
     },
 
     methods: {
-      onConnect() {},
-      onDisconnect() {},
+      onConnect() {
+      },
+
+      onDisconnect() {
+      },
+
       onGames(games) {
         this.games = Object.assign({}, games)
       },
+
       onGameOpened() {
         // pos answer from signaling
-        console.log('disableing')
+        console.log('disableing');
         this.gameIsOpen = true;
         this.game = new Game(this.seed, this.onAddTile)
       },
+
       openGame() {
         // ask signaling for a new game
         this.signaling.openGame(this.game_name);
       },
-      onNewPlayer(client_id, channels) {
-        console.log('new player!')
 
-        this.game.addPlayer(client_id, channels['reliable'], channels['unreliable'])
+      onNewPlayer(client_id, channels) {
+        console.log('new player!', client_id, channels);
+
+        this.game.addPlayer(client_id, channels['reliable'], channels['unreliable']);
         this.players = Object.assign({}, this.game.players)
       },
 
@@ -95,9 +97,8 @@
         // todo
       },
 
-      onAddTile(x, y, tileData){
+      onAddTile(x, y, tileData) {
         // todo
-        this.tiles = Object.assign({}, this.tiles, tile)
       }
     },
   }

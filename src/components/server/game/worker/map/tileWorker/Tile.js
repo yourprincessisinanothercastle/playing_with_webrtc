@@ -3,6 +3,7 @@ import Alea from 'alea';
 
 export default class TileGenerator {
   static genTile(x, y, freq, seed, tileSize) {
+    console.log('creating tile', x, y);
     const heightLayer = TileGenerator._genLayer(x, y, freq, seed + '1', tileSize);
     const tempLayer = TileGenerator._genLayer(x, y, freq, seed + '0', tileSize);
     return {
